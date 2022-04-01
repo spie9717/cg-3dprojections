@@ -67,7 +67,7 @@ function init() {
     window.requestAnimationFrame(animate);
 }
 
-// Animation loop - repeatedly calls rendering code
+// Animation loop - re  peatedly calls rendering code
 function animate(timestamp) {
     // step 1: calculate time (time since start)
     let time = timestamp - start_time;
@@ -86,7 +86,8 @@ function animate(timestamp) {
 // Main drawing code - use information contained in variable `scene`
 function drawScene() {
     console.log(scene);
-    
+    translate: new Matrix(4,4)
+    mat4x4Identity()
     // TODO: implement drawing here!
     // For each model, for each edge
     //  * transform to canonical view volume
