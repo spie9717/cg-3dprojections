@@ -151,8 +151,67 @@ function clipLineParallel(line) {
     let p1 = Vector3(line.pt1.x, line.pt1.y, line.pt1.z);
     let out0 = outcodeParallel(p0);
     let out1 = outcodeParallel(p1);
-    
-    // TODO: implement clipping here!
+
+    //trivial reject
+    if(out0 & out1 != 0) {
+        return result;
+    }
+
+    let b = -1 *((Math.abs((line.pt0.y - line.pt1.y) / (line.pt0.x - line.pt1.x)) * line.pt0.x) - line.pt0.y);
+    //LEFT
+    if(out0 >= 32) {
+        line.p0.x = 0;
+        line.p0.y = b;
+        out0 -= 32;
+    } else if(out1 >= 32) {
+        line.p1.x = 0;
+        line.p1.y = b;
+        out1 -= 32;
+    }
+    //RIGHT
+    if(out0 >= 16) {
+        line.p0.x = w;
+        line.p0.y = ((line.p0.y - line.p1.y) / (line.p0.x - line.p1.x) * w + b);
+        out0 -= 32;
+    } else if(out1 >= 16) {
+        line.p1.x = w;
+        line.p1.y = ((line.p0.y - line.p1.y) / (line.p0.x - line.p1.x) * w + b);
+        out1 -= 32;
+    }
+    //BOTTOM
+    if(out0 >= 8) {
+        line.p0.x = (-1 * b) * ((line.p0.x - line.p1.x) / (line.p0.y - line.p1.y));
+        line.p0.y = h;
+        out0 -= 8;
+    } else if(out1 >= 8) {
+        line.p1.x = (-1 * b) * ((line.p0.x - line.p1.x) / (line.p0.y - line.p1.y));
+        line.p1.y = h;
+        out0 -= 8;
+    }
+    //TOP
+    if(out0 >= 4) {
+        line.p0.x = (h - b) * ((line.p0.x - line.p1.x) / (line.p0.y - line.p1.y));
+        line.p0.y = h;
+        out0 -= 4;
+    } else if(out1 >= 4) {
+        line.p1.x = (h - b) * ((line.p0.x - line.p1.x) / (line.p0.y - line.p1.y));
+        line.p1.y = h;
+        out1 -= 4;
+    }
+    //FAR
+    if(out0 >= 2) {
+
+    } else if(out1 >= 2) {
+
+    }
+    //NEAR
+    if(out0 >= 1) {
+
+    } else if(out1 >= 1) {
+
+    }
+
+
     
     return result;
 }
@@ -166,7 +225,66 @@ function clipLinePerspective(line, z_min) {
     let out1 = outcodePerspective(p1, z_min);
     
     // TODO: implement clipping here!
-    
+
+    //trivial reject
+    if(out0 & out1 != 0) {
+        return result;
+    }
+
+    let b = -1 *((Math.abs((line.pt0.y - line.pt1.y) / (line.pt0.x - line.pt1.x)) * line.pt0.x) - line.pt0.y);
+    //LEFT
+    if(out0 >= 32) {
+        line.p0.x = 0;
+        line.p0.y = b;
+        out0 -= 32;
+    } else if(out1 >= 32) {
+        line.p1.x = 0;
+        line.p1.y = b;
+        out1 -= 32;
+    }
+    //RIGHT
+    if(out0 >= 16) {
+        line.p0.x = w;
+        line.p0.y = ((line.p0.y - line.p1.y) / (line.p0.x - line.p1.x) * w + b);
+        out0 -= 32;
+    } else if(out1 >= 16) {
+        line.p1.x = w;
+        line.p1.y = ((line.p0.y - line.p1.y) / (line.p0.x - line.p1.x) * w + b);
+        out1 -= 32;
+    }
+    //BOTTOM
+    if(out0 >= 8) {
+        line.p0.x = (-1 * b) * ((line.p0.x - line.p1.x) / (line.p0.y - line.p1.y));
+        line.p0.y = h;
+        out0 -= 8;
+    } else if(out1 >= 8) {
+        line.p1.x = (-1 * b) * ((line.p0.x - line.p1.x) / (line.p0.y - line.p1.y));
+        line.p1.y = h;
+        out0 -= 8;
+    }
+    //TOP
+    if(out0 >= 4) {
+        line.p0.x = (h - b) * ((line.p0.x - line.p1.x) / (line.p0.y - line.p1.y));
+        line.p0.y = h;
+        out0 -= 4;
+    } else if(out1 >= 4) {
+        line.p1.x = (h - b) * ((line.p0.x - line.p1.x) / (line.p0.y - line.p1.y));
+        line.p1.y = h;
+        out1 -= 4;
+    }
+    //FAR
+    if(out0 >= 2) {
+
+    } else if(out1 >= 2) {
+
+    }
+    //NEAR
+    if(out0 >= 1) {
+
+    } else if(out1 >= 1) {
+
+    }
+
     return result;
 }
 
