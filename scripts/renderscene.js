@@ -94,6 +94,12 @@ function drawScene() {
     //  * clip in 3D
     //  * project to 2D
     //  * draw line
+    if(scene.type == 'perspective') {
+        mat4x4Perspective(scene.prp, scene.srp, scene.vup, scene.clip);
+        //need to define line and z_min
+        clipLinePerspective(line, z_min);
+    }
+    
 }
 
 // Get outcode for vertex (parallel view volume)
@@ -211,8 +217,6 @@ function clipLineParallel(line) {
 
     }
 
-
-    
     return result;
 }
 
