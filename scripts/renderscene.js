@@ -97,8 +97,8 @@ function drawScene() {
     if(scene.type == 'perspective') {
         mat4x4Perspective(scene.prp, scene.srp, scene.vup, scene.clip);
         //need to define line and z_min
-        clipLinePerspective(line, z_min);
         let z_min = (scene.clip[4]/scene.clip[5])*(-1);
+        clipLinePerspective(line, z_min);
     } else if(scene.type == 'parallel') {
         mat4x4Parallel(scene.prp, scene.srp, scene.vup, scene.clip);
         //need to define line and z_min
