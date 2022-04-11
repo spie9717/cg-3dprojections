@@ -64,14 +64,20 @@ function mat4x4Perspective(prp, srp, vup, clip) {
 // create a 4x4 matrix to project a parallel image on the z=0 plane
 function mat4x4MPar() {
     let mpar = new Matrix(4, 4);
-    // mpar.values = ...;
+    mpar.values =   [[1, 0, 0, 0],
+                     [0, 1, 0, 0],
+                     [0, 0, 0, 0],
+                     [0, 0, 0, 1]];
     return mpar;
 }
 
 // create a 4x4 matrix to project a perspective image on the z=-1 plane
 function mat4x4MPer() {
     let mper = new Matrix(4, 4);
-    // mper.values = ...;
+    mpar.values =   [[1, 0, 0, 0],
+                     [0, 1, 0, 0],
+                     [0, 0, 1, 0],
+                     [0, 0, -1, 0]];
     return mper;
 }
 
