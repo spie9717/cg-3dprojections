@@ -74,6 +74,10 @@ function mat4x4MPar() {
 // create a 4x4 matrix to project a perspective image on the z=-1 plane
 function mat4x4MPer() {
     let mper = new Matrix(4, 4);
+    //this assumes d = -1 (see 3D Projections Part 2 - Slide 22), which I'm assuming
+    //is the case because of the view bounds being -1 < 0 < 1, but yeah.
+    //That same spot is listed on slide 6 as 1/d, so if that assumption is not
+    //correct then we probably will have to change it.
     mpar.values =   [[1, 0, 0, 0],
                      [0, 1, 0, 0],
                      [0, 0, 1, 0],
