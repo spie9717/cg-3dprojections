@@ -121,17 +121,26 @@ function Mat4x4Rotate(mat4x4, u, v, n) {
 
 // set values of existing 4x4 matrix to the rotate about x-axis matrix
 function Mat4x4RotateX(mat4x4, theta) {
-    //mat4x4.values = ...;
+    mat4x4.values = [[1, 0, 0, 0],
+                     [0, Math.cos(theta), (Math.sin(theta))*(-1), 0],
+                     [0, Math.sin(theta), Math.cos(theta), 0],
+                     [0, 0, 0, 1]];
 }
 
 // set values of existing 4x4 matrix to the rotate about y-axis matrix
 function Mat4x4RotateY(mat4x4, theta) {
-    // mat4x4.values = ...;
+    mat4x4.values = [[Math.cos(theta), 0, Math.sin(theta), 0],
+                     [0, 1, 0, 0],
+                     [(Math.sin(theta))*(-1), 0, Math.cos(theta), 0],
+                     [0, 0, 0, 1]];
 }
 
 // set values of existing 4x4 matrix to the rotate about z-axis matrix
 function Mat4x4RotateZ(mat4x4, theta) {
-    // mat4x4.values = ...;
+    mat4x4.values = [[Math.cos(theta), (Math.sin(theta))*(-1), 0, 0],
+                     [Math.sin(theta), Math.cos(theta), 0, 0],
+                     [0, 0, 1, 0],
+                     [0, 0, 0, 1]];
 }
 
 // set values of existing 4x4 matrix to the shear parallel to the xy-plane matrix

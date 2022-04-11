@@ -98,8 +98,13 @@ function drawScene() {
         mat4x4Perspective(scene.prp, scene.srp, scene.vup, scene.clip);
         //need to define line and z_min
         clipLinePerspective(line, z_min);
+    } else if(scene.type == 'parallel') {
+        mat4x4Parallel(scene.prp, scene.srp, scene.vup, scene.clip);
+        //need to define line and z_min
+        clipLineParallel(line, z_min);
+    } else {
+        //TODO: throw error
     }
-    
 }
 
 // Get outcode for vertex (parallel view volume)
