@@ -167,48 +167,40 @@ function clipLineParallel(line) {
 
     //trivial reject
     if(out0 & out1 != 0) {
-        return result;
+        return null;
     }
 
     let b = -1 *((Math.abs((line.pt0.y - line.pt1.y) / (line.pt0.x - line.pt1.x)) * line.pt0.x) - line.pt0.y);
     //LEFT
     if(out0 >= 32) {
-        line.p0.x = 0;
-        line.p0.y = b;
+        p0 = {x: 0, y: b, z: p0.z};
         out0 -= 32;
     } else if(out1 >= 32) {
-        line.p1.x = 0;
-        line.p1.y = b;
+        p1 = {x: 0, y: b, z: p1.z};
         out1 -= 32;
     }
     //RIGHT
     if(out0 >= 16) {
-        line.p0.x = w;
-        line.p0.y = ((line.p0.y - line.p1.y) / (line.p0.x - line.p1.x) * w + b);
+        p0 = {x: w, y: (Math.abs(p0.y - p1.y) / Math.abs(p0.x - p1.x) * w + b), z: p0.z};
         out0 -= 32;
     } else if(out1 >= 16) {
-        line.p1.x = w;
-        line.p1.y = ((line.p0.y - line.p1.y) / (line.p0.x - line.p1.x) * w + b);
+        p0 = {x: w, y: (Math.abs(p0.y - p1.y) / Math.abs(p0.x - p1.x) * w + b), z: p1.z};
         out1 -= 32;
     }
-    //BOTTOM
+    //BOTTOM 
     if(out0 >= 8) {
-        line.p0.x = (-1 * b) * ((line.p0.x - line.p1.x) / (line.p0.y - line.p1.y));
-        line.p0.y = h;
+        p0 = {x: ((-1 * b) * (Math.abs(p0.x - p1.x) / Math.abs(p0.y - p1.y))), y: h, z: p0.z};
         out0 -= 8;
     } else if(out1 >= 8) {
-        line.p1.x = (-1 * b) * ((line.p0.x - line.p1.x) / (line.p0.y - line.p1.y));
-        line.p1.y = h;
+        p1 = {x: ((-1 * b) * (Math.abs(p0.x - p1.x) / Math.abs(p0.y - p1.y))), y: h, z: p1.z};
         out0 -= 8;
     }
     //TOP
     if(out0 >= 4) {
-        line.p0.x = (h - b) * ((line.p0.x - line.p1.x) / (line.p0.y - line.p1.y));
-        line.p0.y = h;
+        p0 = {x: ((h - b) * (Math.abs(line.p0.x - line.p1.x) / Math.abs(line.p0.y - line.p1.y))), y: h, z: p0.z};
         out0 -= 4;
     } else if(out1 >= 4) {
-        line.p1.x = (h - b) * ((line.p0.x - line.p1.x) / (line.p0.y - line.p1.y));
-        line.p1.y = h;
+        p1 = {x: ((h - b) * (Math.abs(line.p0.x - line.p1.x) / Math.abs(line.p0.y - line.p1.y))), y: h, z: p1.z};
         out1 -= 4;
     }
     //FAR
@@ -223,6 +215,8 @@ function clipLineParallel(line) {
     } else if(out1 >= 1) {
 
     }
+
+    result = (p0, p1);
 
     return result;
 }
@@ -242,59 +236,89 @@ function clipLinePerspective(line, z_min) {
         return result;
     }
 
-    let b = -1 *((Math.abs((line.pt0.y - line.pt1.y) / (line.pt0.x - line.pt1.x)) * line.pt0.x) - line.pt0.y);
+    let leftT = ((-1 * p0.x) + p0.z) / (Math.abs(p0.x - p1.x) - Math.abs(p0.z - p1.z));
+    let rightT = (p0.x + p0.z) / (-1 * (Math.abs(p0.x - p1.x)) - Math.abs(p0.z - p1.z));
+    let bottomT = ((p0.y * -1) + p0.z) / (Math.abs(p0.y - p1.y) - Math.abs(p0.z - p1.z));
+    let topT = (p0.y + p0.z) / ((-1 * Math.abs(p0.y - p1.y)) - Math.abs(p0.z - p1.z));
+    let nearT = (p0.z - z_min) / (-1 * (Math.abs(p0.z - p1.z)));
+    let farT = ((-1 * p0.z) - 1) / (Math.abs(p0.z - p1.z));
+
+    //x = (1-t) · x0 + t · x1
+    //y = (1-t) · y0 + t · y1
+    //z = (1-t) · z0 + t · z1
+
     //LEFT
     if(out0 >= 32) {
-        line.p0.x = 0;
-        line.p0.y = b;
+        p0 = {x: (1-leftT) * p0.x + leftT * p1.x,
+              y: (1-leftT) * p0.y + leftT * p1.y,
+              z: (1-leftT) * p0.z + leftT * p1.z};
         out0 -= 32;
     } else if(out1 >= 32) {
-        line.p1.x = 0;
-        line.p1.y = b;
+        p1 = {x: (1-leftT) * p0.x + leftT * p1.x,
+              y: (1-leftT) * p0.y + leftT * p1.y,
+              z: (1-leftT) * p0.z + leftT * p1.z};
         out1 -= 32;
     }
     //RIGHT
     if(out0 >= 16) {
-        line.p0.x = w;
-        line.p0.y = ((line.p0.y - line.p1.y) / (line.p0.x - line.p1.x) * w + b);
+        p0 = {x: (1-rightT) * p0.x + rightT * p1.x,
+              y: (1-rightT) * p0.y + rightT * p1.y,
+              z: (1-rightT) * p0.z + rightT * p1.z};
         out0 -= 32;
     } else if(out1 >= 16) {
-        line.p1.x = w;
-        line.p1.y = ((line.p0.y - line.p1.y) / (line.p0.x - line.p1.x) * w + b);
+        p1 = {x: (1-rightT) * p0.x + rightT * p1.x,
+              y: (1-rightT) * p0.y + rightT * p1.y,
+              z: (1-rightT) * p0.z + rightT * p1.z};
         out1 -= 32;
     }
     //BOTTOM
     if(out0 >= 8) {
-        line.p0.x = (-1 * b) * ((line.p0.x - line.p1.x) / (line.p0.y - line.p1.y));
-        line.p0.y = h;
+        p0 = {x: (1-bottomT) * p0.x + bottomT * p1.x,
+              y: (1-bottomT) * p0.y + bottomT * p1.y,
+              z: (1-bottomT) * p0.z + bottomT * p1.z};
         out0 -= 8;
     } else if(out1 >= 8) {
-        line.p1.x = (-1 * b) * ((line.p0.x - line.p1.x) / (line.p0.y - line.p1.y));
-        line.p1.y = h;
+        p1 = {x: (1-bottomT) * p0.x + bottomT * p1.x,
+              y: (1-bottomT) * p0.y + bottomT * p1.y,
+              z: (1-bottomT) * p0.z + bottomT * p1.z};
         out0 -= 8;
     }
     //TOP
     if(out0 >= 4) {
-        line.p0.x = (h - b) * ((line.p0.x - line.p1.x) / (line.p0.y - line.p1.y));
-        line.p0.y = h;
+        p0 = {x: (1-topT) * p0.x + topT * p1.x,
+              y: (1-topT) * p0.y + topT * p1.y,
+              z: (1-topT) * p0.z + topT * p1.z};
         out0 -= 4;
     } else if(out1 >= 4) {
-        line.p1.x = (h - b) * ((line.p0.x - line.p1.x) / (line.p0.y - line.p1.y));
-        line.p1.y = h;
+        p1 = {x: (1-topT) * p0.x + topT * p1.x,
+              y: (1-topT) * p0.y + topT * p1.y,
+              z: (1-topT) * p0.z + topT * p1.z};
         out1 -= 4;
     }
     //FAR
     if(out0 >= 2) {
-
+        p0 = {x: (1-farT) * p0.x + farT * p1.x,
+              y: (1-farT) * p0.y + farT * p1.y,
+              z: (1-farT) * p0.z + farT * p1.z};
+              out0 -= 2;
     } else if(out1 >= 2) {
-
+        p1 = {x: (1-farT) * p0.x + farT * p1.x,
+              y: (1-farT) * p0.y + farT * p1.y,
+              z: (1-farT) * p0.z + farT * p1.z};
+              out1 -= 2;
     }
     //NEAR
     if(out0 >= 1) {
+        p0 = {x: (1-nearT) * p0.x + nearT * p1.x,
+              y: (1-nearT) * p0.y + nearT * p1.y,
+              z: (1-nearT) * p0.z + nearT * p1.z};
+    } else if(out1 >= 2) {
+        p1 = {x: (1-nearT) * p0.x + nearT * p1.x,
+              y: (1-nearT) * p0.y + nearT * p1.y,
+              z: (1-nearT) * p0.z + nearT * p1.z};
+        }
 
-    } else if(out1 >= 1) {
-
-    }
+    result = (p0, p1);
 
     return result;
 }
