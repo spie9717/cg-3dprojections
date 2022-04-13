@@ -97,40 +97,53 @@ function drawScene() {
     if(scene.view.type == "perspective") {
         let nper = mat4x4Perspective(scene.prp, scene.srp, scene.vup, scene.clip);
         //need to define line
+        let verts = scene.models[0].vertices;
+        console.log("Verts:");
+        console.log(verts);
         let z_min = (scene.view.clip[4]/scene.view.clip[5])*(-1);
-        let pt0 = {x: scene.models.vertices[0].x,
-                   y: scene.models.vertices[0].y,
-                   z: scene.models.vertices[0].z};
+        let pt0 = {x: verts[0].x,
+                   y: verts[0].y,
+                   z: verts[0].z};
         let pt1 = {x: 0,
                    y: 0,
                    z: 0};
         let line = (pt0, pt1);
-        for(let i = 1; i < scene.models.vertices.length; i++) {
-            pt0 = {x: scene.models.vertices[i-1].x,
-                   y: scene.models.vertices[i-1].y,
-                   z: scene.models.vertices[i-1].z};
-            pt1 = {x: scene.models.vertices[i].x,
-                   y: scene.models.vertices[i].y,
-                   z: scene.models.vertices[i].z};
-            line = (pt0, pt1);
+        for(let i = 1; i < verts.length; i++) {
+            pt0 = {x: verts[i-1].x,
+                   y: verts[i-1].y,
+                   z: verts[i-1].z};
+            pt1 = {x: verts[i].x,
+                   y: verts[i].y,
+                   z: verts[i].z};
+            
+            console.log("pt0:");
+            console.log(pt0);
+            console.log("pt1:");
+            console.log(pt1);
+            
+            line = [pt0, pt1];
             line = clipLinePerspective(line, z_min);
-            scene.models.vertices[i-1].x = line.p0.x;
-            scene.models.vertices[i-1].y = line.p0.y;
-            scene.models.vertices[i-1].z = line.p0.z;
-            scene.models.vertices[i].x = line.p1.x;
-            scene.models.vertices[i].y = line.p1.y;
-            scene.models.vertices[i].z = line.p1.z;
+            if(line != null) {
+                verts[i-1].x = line[0].x;
+                verts[i-1].y = line[0].y;
+                verts[i-1].z = line[0].z;
+                verts[i].x = line[1].x;
+                verts[i].y = line[1].y;
+                verts[i].z = line[1].z;
+            }
         }
         let mper = mat4x4MPer();
         nper = Matrix.multiply(nper, mper);
         let veccy1 = new Vector4();
         let veccy2 = new Vector4();
-        for(let i = 1; i < scene.models.vertices.length; i++) {
-            veccy1 = (scene.models.vertices[i-1]);
-            veccy1 = Math.multiply(veccy1, nper);
-            veccy2 = (scene.models.vertices[i-1]);
-            veccy2 = Math.multiply(veccy2, nper);
-            drawLine((veccy1.x/veccy1.w), (veccy1.y/veccy1.w), (veccy2.x/veccy2.w), (veccy2.y/veccy2.w));
+        for(let i = 1; i < verts.length; i++) {
+            veccy1 = (verts[i-1]);
+            veccy1 = Matrix.multiply(veccy1, nper); //FIX MEEEE
+            veccy2 = (verts[i-1]);
+            veccy2 = Matrix.multiply(veccy2, nper); //FIX MEEEE
+            if(veccy1 != null && veccy2 != null) {
+                drawLine((veccy1.x/veccy1.w), (veccy1.y/veccy1.w), (veccy2.x/veccy2.w), (veccy2.y/veccy2.w));
+            }
         }
 
     } else if(scene.view.type == 'parallel') {
@@ -295,9 +308,14 @@ function clipLineParallel(line) {
 
 // Clip line - should either return a new line (with two endpoints inside view volume) or null (if line is completely outside view volume)
 function clipLinePerspective(line, z_min) {
-    let result = null;
-    let p0 = Vector3(line.pt0.x, line.pt0.y, line.pt0.z); 
-    let p1 = Vector3(line.pt1.x, line.pt1.y, line.pt1.z);
+    console.log("Arriving: clipLinePerspective()");
+    console.log("Line:");
+    console.log(line);
+    console.log("z_min:");
+    console.log(z_min);
+    let result = line;
+    let p0 = Vector3(line[0].x, line[0].y, line[0].z); 
+    let p1 = Vector3(line[1].x, line[1].y, line[1].z);
     let out0 = outcodePerspective(p0, z_min);
     let out1 = outcodePerspective(p1, z_min);
     
@@ -305,6 +323,13 @@ function clipLinePerspective(line, z_min) {
 
     //trivial reject
     if(out0 & out1 != 0) {
+        console.log("clipLinePerspective: Trivial Reject");
+        return null;
+    }
+
+    //trivial accept
+    if(out0 || out1 == 0) {
+        console.log("clipLinePerspective: Trivial Accept");
         return result;
     }
 
@@ -390,8 +415,10 @@ function clipLinePerspective(line, z_min) {
               z: (1-nearT) * p0.z + nearT * p1.z};
         }
 
-    result = (p0, p1);
-
+    // result
+    result = [p0, p1];
+    console.log("departing clipLinePerspective.\nResult:");
+    console.log()
     return result;
 }
 
