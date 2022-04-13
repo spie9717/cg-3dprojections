@@ -97,7 +97,7 @@ function drawScene() {
     if(scene.view.type == "perspective") {
         let nper = mat4x4Perspective(scene.prp, scene.srp, scene.vup, scene.clip);
         //need to define line
-        let z_min = (scene.clip[4]/scene.clip[5])*(-1);
+        let z_min = (scene.view.clip[4]/scene.view.clip[5])*(-1);
         let pt0 = {x: scene.models.vertices[0].x,
                    y: scene.models.vertices[0].y,
                    z: scene.models.vertices[0].z};
