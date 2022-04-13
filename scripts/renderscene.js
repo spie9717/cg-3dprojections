@@ -86,26 +86,62 @@ function animate(timestamp) {
 // Main drawing code - use information contained in variable `scene`
 function drawScene() {
     console.log(scene);
-    translate: new Matrix(4,4)
-    mat4x4Identity()
+    //translate: new Matrix(4,4)
+    //mat4x4Identity();
     // TODO: implement drawing here!
     // For each model, for each edge
     //  * transform to canonical view volume
     //  * clip in 3D
     //  * project to 2D
     //  * draw line
-    if(scene.type == 'perspective') {
-        mat4x4Perspective(scene.prp, scene.srp, scene.vup, scene.clip);
-        //need to define line and z_min
+    if(scene.view.type == "perspective") {
+        let nper = mat4x4Perspective(scene.prp, scene.srp, scene.vup, scene.clip);
+        //need to define line
         let z_min = (scene.clip[4]/scene.clip[5])*(-1);
-        clipLinePerspective(line, z_min);
-    } else if(scene.type == 'parallel') {
+        let pt0 = {x: scene.models.vertices[0].x,
+                   y: scene.models.vertices[0].y,
+                   z: scene.models.vertices[0].z};
+        let pt1 = {x: 0,
+                   y: 0,
+                   z: 0};
+        let line = (pt0, pt1);
+        for(let i = 1; i < scene.models.vertices.length; i++) {
+            pt0 = {x: scene.models.vertices[i-1].x,
+                   y: scene.models.vertices[i-1].y,
+                   z: scene.models.vertices[i-1].z};
+            pt1 = {x: scene.models.vertices[i].x,
+                   y: scene.models.vertices[i].y,
+                   z: scene.models.vertices[i].z};
+            line = (pt0, pt1);
+            line = clipLinePerspective(line, z_min);
+            scene.models.vertices[i-1].x = line.p0.x;
+            scene.models.vertices[i-1].y = line.p0.y;
+            scene.models.vertices[i-1].z = line.p0.z;
+            scene.models.vertices[i].x = line.p1.x;
+            scene.models.vertices[i].y = line.p1.y;
+            scene.models.vertices[i].z = line.p1.z;
+        }
+        let mper = mat4x4MPer();
+        nper = Matrix.multiply(nper, mper);
+        let veccy1 = new Vector4();
+        let veccy2 = new Vector4();
+        for(let i = 1; i < scene.models.vertices.length; i++) {
+            veccy1 = (scene.models.vertices[i-1]);
+            veccy1 = Math.multiply(veccy1, nper);
+            veccy2 = (scene.models.vertices[i-1]);
+            veccy2 = Math.multiply(veccy2, nper);
+            drawLine((veccy1.x/veccy1.w), (veccy1.y/veccy1.w), (veccy2.x/veccy2.w), (veccy2.y/veccy2.w));
+        }
+
+    } else if(scene.view.type == 'parallel') {
         mat4x4Parallel(scene.prp, scene.srp, scene.vup, scene.clip);
+
         //need to define line and z_min
         let z_min = 0; //going off of back: z = 0 and assuming it's supposed to differ from perspective. Might be wrong but idk.
         clipLineParallel(line, z_min);
     } else {
         //TODO: throw error
+        console.log("ERROR: invalid scene type");
     }
 }
 

@@ -33,13 +33,14 @@ function mat4x4Parallel(prp, srp, vup, clip) {
 
 // create a 4x4 matrix to the perspective projection / view matrix
 function mat4x4Perspective(prp, srp, vup, clip) {
+    console.log("arrival: mat4x4Perspective()");
     // 1. translate PRP to origin
     let translate2 = new Matrix(4, 4);
-    Mat4x4Translate(translate2, scene.prp.x, scene.prp.y, scene.prp.z);
+    Mat4x4Translate(translate2, scene.view.prp.x, scene.view.prp.y, scene.view.prp.z);
     // 2. rotate VRC such that (u,v,n) align with (x,y,z)
     let rotate2 = new Matrix(4, 4);
-    let n = normalize(scene.prp - scene.srp);
-    let u = normalize(scene.vup.cross(n));
+    let n = normalize(scene.view.prp - scene.view.srp);
+    let u = normalize(scene.view.vup.cross(n));
     let v = n.cross(u);
     Mat4x4Rotate(rotate2, u, v, n);
     // 3. shear such that CW is on the z-axis
@@ -58,6 +59,7 @@ function mat4x4Perspective(prp, srp, vup, clip) {
     Mat4x4Scale(scale2, sx, sy, sz);
     // ...
     let transform2 = Matrix.multiply(translate2, rotate2, shear2, scale2);
+    console.log("departure: mat4x4Perspective()");
     return transform2;
 }
 
@@ -74,14 +76,12 @@ function mat4x4MPar() {
 // create a 4x4 matrix to project a perspective image on the z=-1 plane
 function mat4x4MPer() {
     let mper = new Matrix(4, 4);
-    //this assumes d = -1 (see 3D Projections Part 2 - Slide 22), which I'm assuming
-    //is the case because of the view bounds being -1 < 0 < 1, but yeah.
-    //That same spot is listed on slide 6 as 1/d, so if that assumption is not
-    //correct then we probably will have to change it.
-    mpar.values =   [[1, 0, 0, 0],
+    mper.values =   [[1, 0, 0, 0],
                      [0, 1, 0, 0],
                      [0, 0, 1, 0],
                      [0, 0, -1, 0]];
+
+    
     return mper;
 }
 
