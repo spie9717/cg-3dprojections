@@ -80,7 +80,7 @@ function animate(timestamp) {
 
     // step 4: request next animation frame (recursively calling same function)
     // (may want to leave commented out while debugging initially)
-    // window.requestAnimationFrame(animate);
+    //window.requestAnimationFrame(animate);
 }
 
 // Main drawing code - use information contained in variable `scene`
@@ -133,17 +133,19 @@ function drawScene() {
             }
         }
         let mper = mat4x4MPer();
-        nper = Matrix.multiply(nper, mper);
-        let veccy1 = new Vector4();
-        let veccy2 = new Vector4();
+        nper = nper.mult(mper);
+        console.log("nper:");
+        console.log(nper);
+        let veccy1 = null;
+        let veccy2 = null;
         for(let i = 1; i < verts.length; i++) {
             veccy1 = (verts[i-1]);
-            veccy1 = Matrix.multiply(veccy1, nper); //FIX MEEEE
+            veccy1 = nper.mult(veccy1);
             veccy2 = (verts[i-1]);
-            veccy2 = Matrix.multiply(veccy2, nper); //FIX MEEEE
-            if(veccy1 != null && veccy2 != null) {
-                drawLine((veccy1.x/veccy1.w), (veccy1.y/veccy1.w), (veccy2.x/veccy2.w), (veccy2.y/veccy2.w));
-            }
+            veccy2 = nper.mult(veccy2);
+            //if(veccy1 != null && veccy2 != null) {
+            drawLine((veccy1.x/veccy1.w), (veccy1.y/veccy1.w), (veccy2.x/veccy2.w), (veccy2.y/veccy2.w));
+            //}
         }
 
     } else if(scene.view.type == 'parallel') {
@@ -486,6 +488,7 @@ function loadNewScene() {
 
 // Draw black 2D line with red endpoints 
 function drawLine(x1, y1, x2, y2) {
+    console.log("Drawing line...");
     ctx.strokeStyle = '#000000';
     ctx.beginPath();
     ctx.moveTo(x1, y1);
