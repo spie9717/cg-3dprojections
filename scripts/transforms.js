@@ -66,6 +66,7 @@ function mat4x4Perspective(prp, srp, vup, clip) {
     let view = rotate2.mult(translate2);
     let transform2 = projection.mult(view);
     console.log("departure: mat4x4Perspective()");
+    console.log(transform2);
     return transform2;
 }
 

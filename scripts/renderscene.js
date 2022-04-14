@@ -141,10 +141,12 @@ function drawScene() {
         for(let i = 1; i < verts.length; i++) {
             veccy1 = (verts[i-1]);
             veccy1 = nper.mult(veccy1);
+            console.log("veccy1:");
+            console.log(veccy1);
             veccy2 = (verts[i-1]);
             veccy2 = nper.mult(veccy2);
             //if(veccy1 != null && veccy2 != null) {
-            drawLine((veccy1.x/veccy1.w), (veccy1.y/veccy1.w), (veccy2.x/veccy2.w), (veccy2.y/veccy2.w));
+            drawLine((veccy1[0]/veccy1[3]), (veccy1[1]/veccy1[3]), (veccy2[0]/veccy2[3]), (veccy2[1]/veccy2[3]));
             //}
         }
 
@@ -220,6 +222,7 @@ function clipLineParallel(line) {
     if(out0 & out1 != 0) {
         return null;
     }
+    
     
     let leftT = ((-1 * p0.x) + p0.z) / (Math.abs(p0.x - p1.x) - Math.abs(p0.z - p1.z));
     let rightT = (p0.x + p0.z) / (-1 * (Math.abs(p0.x - p1.x)) - Math.abs(p0.z - p1.z));
@@ -324,10 +327,12 @@ function clipLinePerspective(line, z_min) {
     // TODO: implement clipping here!
 
     //trivial reject
+    /*
     if(out0 & out1 != 0) {
         console.log("clipLinePerspective: Trivial Reject");
         return null;
     }
+    */
 
     //trivial accept
     if(out0 || out1 == 0) {
@@ -489,6 +494,7 @@ function loadNewScene() {
 // Draw black 2D line with red endpoints 
 function drawLine(x1, y1, x2, y2) {
     console.log("Drawing line...");
+    console.log("x1: " + x1 + " x2: " + x2 + " y1: " + y1 + " y2: " + y2);
     ctx.strokeStyle = '#000000';
     ctx.beginPath();
     ctx.moveTo(x1, y1);
