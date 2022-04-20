@@ -148,8 +148,8 @@ function drawScene() {
                     //let vert_count = 0;
                     verts_clipped[vert_count-1] = new Matrix(4,1);
                     verts_clipped[vert_count-1].values = [[line.pt0.x], [line.pt0.y], [line.pt0.z], [1]];
-                    console.log("aye");
-                    console.log(verts_clipped[vert_count-1]);
+                    //console.log("aye");
+                    //console.log(verts_clipped[vert_count-1]);
                     verts_clipped[vert_count] = new Matrix(4,1);
                     verts_clipped[vert_count].values = [[line.pt1.x], [line.pt1.y], [line.pt1.z], [1]];
                     vert_count++;
