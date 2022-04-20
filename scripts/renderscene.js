@@ -520,15 +520,6 @@ function loadNewScene() {
 // Draw black 2D line with red endpoints 
 function drawLine(x1, y1, x2, y2) {
 
-    x1 = Math.abs(x1);
-    x1 = x1 * 100;
-    x2 = Math.abs(x2);
-    x2 = x2 * 100;
-    y1 = Math.abs(y1);
-    y1 = y1 * 100;
-    y2 = Math.abs(y2);
-    y2 = y2 * 100;
-
     console.log("Drawing line...");
     console.log("x1: " + x1 + " x2: " + x2 + " y1: " + y1 + " y2: " + y2);
     ctx.strokeStyle = '#000000';
