@@ -95,8 +95,54 @@ function drawScene() {
     //  * project to 2D
     //  * draw line
     if(scene.view.type == "perspective") {
-        let nper = mat4x4Perspective(scene.view.prp, scene.view.srp, scene.view.vup, scene.view.clip);
+        let transformed = mat4x4Perspective(scene.view.prp, scene.view.srp, scene.view.vup, scene.view.clip);
+
+        console.log("transformed:");
+        console.log(transformed);
+
+        let verts_processed = [];
+        //console.log(scene.models.vertices);
+        for(let i = 0; i < scene.models[0].vertices.length; i++) {
+            let verts = new Matrix(4, 1);
+            verts.values = [[scene.models[0].vertices[i].x], [scene.models[0].vertices[i].y], [scene.models[0].vertices[i].z], [scene.models[0].vertices[i].w]];
+            /*
+            console.log("verts, nper, matrix: ");
+            console.log(verts);
+            console.log(nper);
+            console.log(scene.models[0].matrix);
+            */
+            //DON'T SWITCH THIS MULTIPLICATION ORDER; THIS WILL NOT WORK IN ANY OTHER MATRIX ORDER
+            //(and also I'll be mad cuz it took me a lot of trial and error to figure out the matrix order)
+            verts_processed[i] = Matrix.multiply([transformed, scene.models[0].matrix, verts]);
+        }
+        for(let i = 0; i < verts_processed.length; i++) {
+            verts_processed[i] = verts_processed[i].data;
+        }
+
+        console.log("verts_processed:");
+        console.log(verts_processed);
+
+        let z_min = -(scene.view.clip[4] / scene.view.clip[5]);
+        
+        for(let i = 0; i < scene.models[0].edges.length; i++) {
+            let edge1 = scene.models[0].edges[i][0];
+            let vert1 = verts_processed[edge1];
+            //console.log("vert1:");
+            //console.log(vert1);
+            for(let j = 1; j < scene.models[0].edges[i].length; j++) {
+                let edge2 = scene.models[0].edges[i][j];
+                let vert2 = verts_processed[edge2];
+                //console.log("vert2:");
+                //console.log(vert2);
+
+                let line = { pt0: {x:vert1[0][0], y:vert1[1][0], z: vert1[2][0]},
+                             pt1: {x:vert2[0][0], y:vert2[1][0], z:vert2[2][0]}};
+                //console.log("line:");
+                //console.log(line);
+            }
+        }
         //need to define line
+        /*
         let verts = scene.models[0].vertices;
         console.log("Verts:");
         console.log(verts);
@@ -144,12 +190,6 @@ function drawScene() {
             }
         }
 
-        let mper = mat4x4MPer();
-        nper = nper.mult(mper);
-
-        console.log("nper:");
-        console.log(nper);
-
         let veccy1 = null;
         let veccy2 = null;
         for(let i = 1; i < verts.length; i++) {
@@ -170,8 +210,9 @@ function drawScene() {
             if(veccy1 != null && veccy2 != null) {
                 drawLine((veccy1.data[0][0]/veccy1.data[3][0]), (veccy1.data[1][0]/veccy1.data[3][0]), (veccy2.data[0][0]/veccy2.data[3][0]), (veccy2.data[1][0]/veccy2.data[3][0]));
             }
-        }
-
+            */
+        
+        
     } else if(scene.view.type == 'parallel') {
         mat4x4Parallel(scene.prp, scene.srp, scene.vup, scene.clip);
 
@@ -338,36 +379,30 @@ function clipLineParallel(line) {
 
 // Clip line - should either return a new line (with two endpoints inside view volume) or null (if line is completely outside view volume)
 function clipLinePerspective(line, z_min) {
-    //console.log("Arriving: clipLinePerspective()");
-    //console.log("Line:");
-    //console.log(line);
-    //console.log("z_min:");
-    //console.log(z_min);
     let result = null;
-    let p0 = {x: line.pt0.x, y: line.pt0.y, z: line.pt0.z}; 
-    let p1 = {x: line.pt1.x, y: line.pt1.y, z: line.pt1.z};
-    let out0 = outcodePerspective({x: line.pt0.x, y: line.pt0.y, z: line.pt0.z}, z_min);
-    let out1 = outcodePerspective({x: line.pt1.x, y: line.pt1.y, z: line.pt1.z}, z_min);
+    let p0 = Vector3(line.pt0.x, line.pt0.y, line.pt0.z); 
+    let p1 = Vector3(line.pt1.x, line.pt1.y, line.pt1.z);
+    let out0 = outcodePerspective(p0, z_min);
+    let out1 = outcodePerspective(p1, z_min);
     console.log("out0: " + out0 + " out1: " + out1);
     // TODO: implement clipping here!
 
+    //trivial accept
+    if(out0 == 0 && out1 == 0) {
+        console.log("clipLinePerspective: Trivial Accept");
+        result = {pt0: p0, pt1: p1};
+        return result;
+    } 
     //trivial reject
-    
-    if((out0 & out1) != 0) {
+    else if((out0 & out1) != 0) {
         console.log("clipLinePerspective: Trivial Reject");
-        return null;
+        return result;
     }
-    
-    
     
 
     //trivial accept
     
-    if(out0 == 0 && out1 == 0) {
-        console.log("clipLinePerspective: Trivial Accept");
-        //result = {pt0: p0, pt1: p1};
-        return result;
-    }
+    
     
 
     let leftT = ((-1 * p0.x) + p0.z) / (Math.abs(p0.x - p1.x) - Math.abs(p0.z - p1.z));
