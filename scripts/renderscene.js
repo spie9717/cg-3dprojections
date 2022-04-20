@@ -210,6 +210,9 @@ function outcodeParallel(vertex) {
 
 // Get outcode for vertex (perspective view volume)
 function outcodePerspective(vertex, z_min) {
+    console.log("outcodePerspective().vertex:");
+    console.log(vertex);
+
     let outcode = 0;
     if (vertex.x < (vertex.z - FLOAT_EPSILON)) {
         outcode += LEFT;
@@ -341,10 +344,10 @@ function clipLinePerspective(line, z_min) {
     //console.log("z_min:");
     //console.log(z_min);
     let result = null;
-    let p0 = Vector3(line.pt1.x, line.pt1.y, line.pt1.z); 
-    let p1 = Vector3(line.pt1.x, line.pt1.y, line.pt1.z);
-    let out0 = outcodePerspective(p0, z_min);
-    let out1 = outcodePerspective(p1, z_min);
+    let p0 = {x: line.pt0.x, y: line.pt0.y, z: line.pt0.z}; 
+    let p1 = {x: line.pt1.x, y: line.pt1.y, z: line.pt1.z};
+    let out0 = outcodePerspective({x: line.pt0.x, y: line.pt0.y, z: line.pt0.z}, z_min);
+    let out1 = outcodePerspective({x: line.pt1.x, y: line.pt1.y, z: line.pt1.z}, z_min);
     console.log("out0: " + out0 + " out1: " + out1);
     // TODO: implement clipping here!
 
@@ -354,6 +357,7 @@ function clipLinePerspective(line, z_min) {
         console.log("clipLinePerspective: Trivial Reject");
         return null;
     }
+    
     
     
 
@@ -372,6 +376,8 @@ function clipLinePerspective(line, z_min) {
     let topT = (p0.y + p0.z) / ((-1 * Math.abs(p0.y - p1.y)) - Math.abs(p0.z - p1.z));
     let nearT = (p0.z - z_min) / (-1 * (Math.abs(p0.z - p1.z)));
     let farT = ((-1 * p0.z) - 1) / (Math.abs(p0.z - p1.z));
+
+    console.log("leftT: " + leftT + " rightT: " + rightT + " bottomT: " + bottomT + " topT: " + topT + " nearT: " + nearT + " farT: " + farT);
 
     //x = (1-t) · x0 + t · x1
     //y = (1-t) · y0 + t · y1
