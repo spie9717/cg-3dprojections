@@ -123,7 +123,8 @@ function drawScene() {
         console.log(verts_processed);
 
         let z_min = -(scene.view.clip[4] / scene.view.clip[5]);
-        
+        let vert_count = 1;
+        let verts_clipped = [];
         for(let i = 0; i < scene.models[0].edges.length; i++) {
             let edge1 = scene.models[0].edges[i][0];
             let vert1 = verts_processed[edge1];
@@ -135,10 +136,24 @@ function drawScene() {
                 //console.log("vert2:");
                 //console.log(vert2);
 
-                let line = { pt0: {x:vert1[0][0], y:vert1[1][0], z: vert1[2][0]},
+                let line = { pt0: {x:vert1[0][0], y:vert1[1][0], z:vert1[2][0]},
                              pt1: {x:vert2[0][0], y:vert2[1][0], z:vert2[2][0]}};
-                //console.log("line:");
-                //console.log(line);
+                console.log("line pre:");
+                console.log(line);
+                line = clipLinePerspective(line, z_min);
+                console.log("line post:");
+                console.log(line);
+                if(line != null) {
+                    console.log("line != null");
+                    //let vert_count = 0;
+                    verts_clipped[vert_count-1] = new Matrix(4,1);
+                    verts_clipped[vert_count-1].values = [[line.pt0.x], [line.pt0.y], [line.pt0.z], [1]];
+                    console.log("aye");
+                    console.log(verts_clipped[vert_count-1]);
+                    verts_clipped[vert_count] = new Matrix(4,1);
+                    verts_clipped[vert_count].values = [[line.pt1.x], [line.pt1.y], [line.pt1.z], [1]];
+                    vert_count++;
+                }
             }
         }
         //need to define line
@@ -251,8 +266,8 @@ function outcodeParallel(vertex) {
 
 // Get outcode for vertex (perspective view volume)
 function outcodePerspective(vertex, z_min) {
-    console.log("outcodePerspective().vertex:");
-    console.log(vertex);
+    //console.log("outcodePerspective().vertex:");
+    //console.log(vertex);
 
     let outcode = 0;
     if (vertex.x < (vertex.z - FLOAT_EPSILON)) {
@@ -384,6 +399,7 @@ function clipLinePerspective(line, z_min) {
     let p1 = Vector3(line.pt1.x, line.pt1.y, line.pt1.z);
     let out0 = outcodePerspective(p0, z_min);
     let out1 = outcodePerspective(p1, z_min);
+    console.log("clipping\nx: " + p0.x + " y: " + p0.y + " z: " + p0.z + "\nx: " + p1.x + " y: " + p1.y + " z: " + p1.z);
     console.log("out0: " + out0 + " out1: " + out1);
     // TODO: implement clipping here!
 
@@ -398,12 +414,6 @@ function clipLinePerspective(line, z_min) {
         console.log("clipLinePerspective: Trivial Reject");
         return result;
     }
-    
-
-    //trivial accept
-    
-    
-    
 
     let leftT = ((-1 * p0.x) + p0.z) / (Math.abs(p0.x - p1.x) - Math.abs(p0.z - p1.z));
     let rightT = (p0.x + p0.z) / (-1 * (Math.abs(p0.x - p1.x)) - Math.abs(p0.z - p1.z));
@@ -490,9 +500,9 @@ function clipLinePerspective(line, z_min) {
         }
 
     // result
-    result = [p0, p1];
+    result = {pt0: p0, pt1: p1};
     console.log("departing clipLinePerspective.\nResult:");
-    console.log()
+    console.log(result);
     return result;
 }
 
