@@ -95,12 +95,12 @@ function drawScene() {
     //  * project to 2D
     //  * draw line
     if(scene.view.type == "perspective") {
-        let nper = mat4x4Perspective(scene.prp, scene.srp, scene.vup, scene.clip);
+        let nper = mat4x4Perspective(scene.view.prp, scene.view.srp, scene.view.vup, scene.view.clip);
         //need to define line
         let verts = scene.models[0].vertices;
         console.log("Verts:");
         console.log(verts);
-        let z_min = (scene.view.clip[4]/scene.view.clip[5])*(-1);
+        let z_min = -(scene.view.clip[4] / scene.view.clip[5]);
         let pt0 = {x: verts[0].x,
                    y: verts[0].y,
                    z: verts[0].z};
@@ -120,34 +120,56 @@ function drawScene() {
             console.log(pt0);
             console.log("pt1:");
             console.log(pt1);
+            console.log("verts[i-1].x:");
+            console.log(verts[i-1].x);
+            console.log("verts[i].x:");
+            console.log(verts[i].x);
             
-            line = [pt0, pt1];
+            line = {pt0, pt1};
+            console.log("line pre:");
+            console.log(line);
             line = clipLinePerspective(line, z_min);
+            console.log("line post:");
+            console.log(line);
             if(line != null) {
-                verts[i-1].x = line[0].x;
-                verts[i-1].y = line[0].y;
-                verts[i-1].z = line[0].z;
-                verts[i].x = line[1].x;
-                verts[i].y = line[1].y;
-                verts[i].z = line[1].z;
+                verts[i-1].x = line.pt0.x;
+                verts[i-1].y = line.pt0.y;
+                verts[i-1].z = line.pt0.z;
+                verts[i].x = line.pt1.x;
+                verts[i].y = line.pt1.y;
+                verts[i].z = line.pt1.z;
+
+                //console.log("line.pt0.x:");
+                //console.log(line.pt0.x);
             }
         }
+
         let mper = mat4x4MPer();
         nper = nper.mult(mper);
+
         console.log("nper:");
         console.log(nper);
+
         let veccy1 = null;
         let veccy2 = null;
         for(let i = 1; i < verts.length; i++) {
             veccy1 = (verts[i-1]);
+            //console.log("veccy1 pre:");
+            //console.log(veccy1);
             veccy1 = nper.mult(veccy1);
-            console.log("veccy1:");
-            console.log(veccy1);
-            veccy2 = (verts[i-1]);
+            //console.log("veccy1 post:");
+            //console.log(veccy1);
+            console.log(veccy1.data[0][0]); //x
+            console.log(veccy1.data[1][0]); //y
+            console.log(veccy1.data[2][0]); //z
+            console.log(veccy1.data[3][0]); //w
+
+            veccy2 = (verts[i]);
             veccy2 = nper.mult(veccy2);
-            //if(veccy1 != null && veccy2 != null) {
-            drawLine((veccy1[0]/veccy1[3]), (veccy1[1]/veccy1[3]), (veccy2[0]/veccy2[3]), (veccy2[1]/veccy2[3]));
-            //}
+
+            if(veccy1 != null && veccy2 != null) {
+                drawLine((veccy1.data[0][0]/veccy1.data[3][0]), (veccy1.data[1][0]/veccy1.data[3][0]), (veccy2.data[0][0]/veccy2.data[3][0]), (veccy2.data[1][0]/veccy2.data[3][0]));
+            }
         }
 
     } else if(scene.view.type == 'parallel') {
@@ -219,7 +241,7 @@ function clipLineParallel(line) {
     let out1 = outcodeParallel(p1);
 
     //trivial reject
-    if(out0 & out1 != 0) {
+    if((out0 & out1) != 0) {
         return null;
     }
     
@@ -306,39 +328,43 @@ function clipLineParallel(line) {
               z: (1-nearT) * p0.z + nearT * p1.z};
         }
 
-    result = (p0, p1);
+    result = {p0, p1};
 
     return result;
 }
 
 // Clip line - should either return a new line (with two endpoints inside view volume) or null (if line is completely outside view volume)
 function clipLinePerspective(line, z_min) {
-    console.log("Arriving: clipLinePerspective()");
-    console.log("Line:");
-    console.log(line);
-    console.log("z_min:");
-    console.log(z_min);
-    let result = line;
-    let p0 = Vector3(line[0].x, line[0].y, line[0].z); 
-    let p1 = Vector3(line[1].x, line[1].y, line[1].z);
+    //console.log("Arriving: clipLinePerspective()");
+    //console.log("Line:");
+    //console.log(line);
+    //console.log("z_min:");
+    //console.log(z_min);
+    let result = null;
+    let p0 = Vector3(line.pt1.x, line.pt1.y, line.pt1.z); 
+    let p1 = Vector3(line.pt1.x, line.pt1.y, line.pt1.z);
     let out0 = outcodePerspective(p0, z_min);
     let out1 = outcodePerspective(p1, z_min);
-    
+    console.log("out0: " + out0 + " out1: " + out1);
     // TODO: implement clipping here!
 
     //trivial reject
-    /*
-    if(out0 & out1 != 0) {
+    
+    if((out0 & out1) != 0) {
         console.log("clipLinePerspective: Trivial Reject");
         return null;
     }
-    */
+    
+    
 
     //trivial accept
-    if(out0 || out1 == 0) {
+    
+    if(out0 == 0 && out1 == 0) {
         console.log("clipLinePerspective: Trivial Accept");
+        //result = {pt0: p0, pt1: p1};
         return result;
     }
+    
 
     let leftT = ((-1 * p0.x) + p0.z) / (Math.abs(p0.x - p1.x) - Math.abs(p0.z - p1.z));
     let rightT = (p0.x + p0.z) / (-1 * (Math.abs(p0.x - p1.x)) - Math.abs(p0.z - p1.z));
@@ -493,6 +519,16 @@ function loadNewScene() {
 
 // Draw black 2D line with red endpoints 
 function drawLine(x1, y1, x2, y2) {
+
+    x1 = Math.abs(x1);
+    x1 = x1 * 100;
+    x2 = Math.abs(x2);
+    x2 = x2 * 100;
+    y1 = Math.abs(y1);
+    y1 = y1 * 100;
+    y2 = Math.abs(y2);
+    y2 = y2 * 100;
+
     console.log("Drawing line...");
     console.log("x1: " + x1 + " x2: " + x2 + " y1: " + y1 + " y2: " + y2);
     ctx.strokeStyle = '#000000';

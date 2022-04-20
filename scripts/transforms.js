@@ -34,37 +34,49 @@ function mat4x4Parallel(prp, srp, vup, clip) {
 // create a 4x4 matrix to the perspective projection / view matrix
 function mat4x4Perspective(prp, srp, vup, clip) {
     console.log("arrival: mat4x4Perspective()");
+    console.log(clip);
     // 1. translate PRP to origin
     let translate2 = mat4x4MPer();
     Mat4x4Translate(translate2, scene.view.prp.x, scene.view.prp.y, scene.view.prp.z);
     // 2. rotate VRC such that (u,v,n) align with (x,y,z)
     let rotate2 = mat4x4MPer();
     let n = new Vector(scene.view.prp.subtract(scene.view.srp));
-    
-    n.normalize;
+    console.log("un-normaled");
+    console.log(n);
+    n.normalize();
+    console.log("normaled");
+    console.log(n);
     let u = new Vector(scene.view.vup.cross(n));
-    u.normalize;
+    u.normalize();
     let v = new Vector(scene.view.vup.cross(u));
     Mat4x4Rotate(rotate2, u, v, n);
     
     // 3. shear such that CW is on the z-axis
     let shear2 = mat4x4MPer();
+    /*
     let dopx = (LEFT) + (RIGHT) / 2;
     let dopy = (BOTTOM) + (TOP) / 2;
     let dopz = NEAR;
+    */
+    let dopx = (clip[0]) + (clip[1]) / 2;
+    let dopy = (clip[2]) + (clip[3]) / 2;
+    let dopz = (clip[4] * -1);
     let shx = (dopx * -1) / dopz;
     let shy = (dopy * -1) / dopz;
     Mat4x4ShearXY(shear2, shx, shy);
     // 4. scale such that view volume bounds are ([z,-z], [z,-z], [-1,zmin])
     let scale2 = mat4x4MPer();
-    let sx = (2 * NEAR) / ((RIGHT - LEFT) * FAR);
-    let sy = (2 * NEAR) / ((TOP - BOTTOM) * FAR);
-    let sz = (1 / FAR);
+    let sx = (2 * clip[4]) / ((clip[1] - clip[0]) * clip[5]);
+    let sy = (2 * clip[4]) / ((clip[3] - clip[2]) * clip[5]);
+    let sz = (1 / clip[5]);
     Mat4x4Scale(scale2, sx, sy, sz);
     // ...
+    
     let projection = scale2.mult(shear2);
     let view = rotate2.mult(translate2);
     let transform2 = projection.mult(view);
+    
+    //let transform2 = mathjs.multiply(scale2, shear2, rotate2, translate2);
     console.log("departure: mat4x4Perspective()");
     console.log(transform2);
     return transform2;
